@@ -72,3 +72,38 @@ class Manager:
         for tenant in tenants_in_apartment ] 
     
     
+
+    def get_debtors_report(self, year: int, month: int):
+        debtors = []
+        for apartment_key in self.apartments.keys():
+            apt_settlement = self.get_settlement(apartment_key, year, month)
+            if apt_settlement is None or apt_settlement.total_due_pln == 0:
+                continue
+                
+            tenant_settlements = self.create_tenants_settlements(apt_settlement)
+            if not tenant_settlements:
+                continue
+            for ts in tenant_settlements:
+                if ts.total_due_pln > 0:
+                    debtors.append(ts)
+                    
+        return debtors
+    
+
+
+    def get_tax(self, year: int, month: int, tax_rate: float) -> int:
+        total_income = 0.0
+        if hasattr(self, 'transfers'):
+            for transfer in self.transfers:
+                if str(year) in str(transfer.date) and str(month).zfill(2) in str(transfer.date):
+                    total_income += transfer.amount
+                    
+        return round(total_income * tax_rate)
+    
+
+    def find_apartments_without_bills(self, apartment_key: str, year: int, month: int) -> bool:
+        settlement = self.get_settlement(apartment_key, year, month)
+        if settlement is None or settlement.total_apartment_costs == 0:
+            return True 
+            
+        return False 

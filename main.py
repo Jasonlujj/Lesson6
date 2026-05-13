@@ -71,3 +71,32 @@ if __name__ == '__main__':
     display_tenants(manager)
     
     print(f"\n{'=' * 70}\n")
+
+
+import sys
+from src.manager import Manager
+from src.models import Parameters
+
+if __name__ == '__main__':
+    if len(sys.argv) < 4:
+        sys.exit(1) 
+    apartment_key = sys.argv[1]
+    year = int(sys.argv[2])  
+    month = int(sys.argv[3])
+    manager = Manager(parameters=Parameters())
+    settlement = manager.get_settlement(apartment_key, year, month)
+
+    if settlement is None:
+        print("Brak danych lub rachunków dla tego mieszkania w podanym okresie")
+    else:
+        print(f" Całkowite koszty mieszkania: {settlement.total_apartment_costs} PLN")
+        
+        tenant_settlements = manager.create_tenants_settlements(settlement)
+        
+        if not tenant_settlements:
+            print("Brak lokatorów do rozliczenia.")
+        else:
+            print("Podział na lokatorów:")
+            for ts in tenant_settlements:
+                print(f"   - {ts.tenant.name}: {ts.total_due_pln} PLN")
+    print("-" * 50 + " ")
